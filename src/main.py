@@ -14,8 +14,8 @@ import uuid
 app = Flask(__name__)
 
 # Konfigurasi
-MODEL_PATH = "/home/ubuntu/sibi_flask_app/best.pt"  # Path ke model kustom SIBI
-CONFIDENCE_THRESHOLD = 0.5  # Ambang batas kepercayaan minimum untuk deteksi
+MODEL_PATH = "G:/Github/SIBI/SIBI-YOLOv8/best.pt"  # Path ke model kustom SIBI
+CONFIDENCE_THRESHOLD = 0.8  # Ambang batas kepercayaan minimum untuk deteksi
 
 # Daftar label SIBI
 SIBI_LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 
@@ -41,7 +41,7 @@ def initialize():
 def text_to_speech(text, output_filename):
     try:
         # Cek apakah file kredensial ada
-        credentials_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "google_credentials.json")
+        credentials_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "G:/Github/SIBI/SIBI-YOLOv8/google_credentials.json")
         if not os.path.exists(credentials_path):
             print(f"File kredensial Google Cloud tidak ditemukan di: {credentials_path}")
             return False

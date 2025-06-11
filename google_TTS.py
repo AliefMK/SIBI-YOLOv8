@@ -13,7 +13,7 @@ def main():
 
 def text_to_speech(text, output_filename):
     
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "SIBI-KEY.json"
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "SIBIKEY.json"
     
     # Create a Text-to-Speech client
     client = texttospeech.TextToSpeechClient()

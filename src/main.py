@@ -10,12 +10,15 @@ import threading
 import json
 from google.cloud import texttospeech
 import uuid
+from collections import deque
 
 app = Flask(__name__)
 
 # Konfigurasi
 MODEL_PATH = "G:/Github/SIBI/SIBI-YOLOv8/best.pt"  # Path ke model kustom SIBI
-CONFIDENCE_THRESHOLD = 0.8  # Ambang batas kepercayaan minimum untuk deteksi
+CONFIDENCE_THRESHOLD = 0.7  # Ambang batas kepercayaan minimum untuk deteksi (ditingkatkan dari 0.5)
+DETECTION_DELAY = 0.8  # Jeda antar deteksi dalam detik (ditingkatkan dari 0.5)
+STABILITY_FRAMES = 3  # Jumlah frame berturut-turut yang diperlukan untuk konfirmasi deteksi
 
 # Daftar label SIBI
 SIBI_LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 
@@ -28,6 +31,8 @@ lock = threading.Lock()
 is_recording = False
 recorded_letters = []
 model = None
+last_detection_time = 0
+detection_history = {}  # Untuk melacak stabilitas deteksi
 
 def initialize():
     global model
@@ -41,7 +46,7 @@ def initialize():
 def text_to_speech(text, output_filename):
     try:
         # Cek apakah file kredensial ada
-        credentials_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "G:/Github/SIBI/SIBI-YOLOv8/google_credentials.json")
+        credentials_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "google_credentials.json")
         if not os.path.exists(credentials_path):
             print(f"File kredensial Google Cloud tidak ditemukan di: {credentials_path}")
             return False
@@ -84,7 +89,7 @@ def text_to_speech(text, output_filename):
         return False
 
 def detect_sibi_in_frame(frame):
-    global model
+    global model, detection_history
     
     if model is None:
         return frame, None
@@ -93,6 +98,7 @@ def detect_sibi_in_frame(frame):
     results = model(frame, stream=True, conf=CONFIDENCE_THRESHOLD, verbose=False)
     
     detected_letters = []
+    current_detections = {}
     
     # Proses hasil deteksi
     for r in results:
@@ -108,20 +114,48 @@ def detect_sibi_in_frame(frame):
             if 0 <= cls_idx < len(SIBI_LABELS):
                 letter = SIBI_LABELS[cls_idx]
                 label = f"{letter} {conf:.2f}"  # Buat label (nama kelas + kepercayaan)
-                detected_letters.append(letter)
+                
+                # Tambahkan ke deteksi saat ini
+                if letter in current_detections:
+                    if conf > current_detections[letter]['conf']:
+                        current_detections[letter] = {'conf': conf, 'box': (x1, y1, x2, y2)}
+                else:
+                    current_detections[letter] = {'conf': conf, 'box': (x1, y1, x2, y2)}
             else:
                 label = f"Unknown {conf:.2f}"  # Jika indeks di luar jangkauan
+    
+    # Update history deteksi dan gambar bounding box
+    for letter, data in current_detections.items():
+        # Update history deteksi
+        if letter not in detection_history:
+            detection_history[letter] = 1
+        else:
+            detection_history[letter] += 1
+        
+        # Jika deteksi stabil (terdeteksi dalam beberapa frame berturut-turut)
+        if detection_history[letter] >= STABILITY_FRAMES:
+            detected_letters.append(letter)
             
             # Gambar bounding box pada frame
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)  # Warna hijau, ketebalan 2
+            x1, y1, x2, y2 = data['box']
+            conf = data['conf']
+            label = f"{letter} {conf:.2f}"
             
-            # Tambahkan label teks
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)  # Warna hijau, ketebalan 2
             cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    
+    # Reset history untuk huruf yang tidak terdeteksi di frame saat ini
+    for letter in list(detection_history.keys()):
+        if letter not in current_detections:
+            detection_history[letter] = 0
+            # Hapus dari history jika sudah tidak terdeteksi lagi
+            if detection_history[letter] <= 0:
+                del detection_history[letter]
     
     return frame, detected_letters
 
 def generate_frames():
-    global output_frame, lock, is_recording, recorded_letters, camera
+    global output_frame, lock, is_recording, recorded_letters, camera, last_detection_time
     
     if camera is None:
         camera = cv2.VideoCapture(0)  # 0 untuk webcam default
@@ -137,11 +171,15 @@ def generate_frames():
         # Deteksi SIBI pada frame
         processed_frame, detected_letters = detect_sibi_in_frame(frame)
         
-        # Jika sedang merekam, tambahkan huruf yang terdeteksi
+        # Jika sedang merekam, tambahkan huruf yang terdeteksi dengan jeda
+        current_time = time.time()
         if is_recording and detected_letters:
-            for letter in detected_letters:
-                if not recorded_letters or recorded_letters[-1] != letter:
-                    recorded_letters.append(letter)
+            if current_time - last_detection_time >= DETECTION_DELAY:
+                for letter in detected_letters:
+                    if not recorded_letters or recorded_letters[-1] != letter:
+                        recorded_letters.append(letter)
+                        last_detection_time = current_time
+                        break  # Hanya tambahkan satu huruf per interval waktu
         
         # Tambahkan indikator rekaman jika sedang merekam
         if is_recording:
@@ -174,9 +212,11 @@ def video_feed():
 
 @app.route('/start_recording', methods=['POST'])
 def start_recording():
-    global is_recording, recorded_letters
+    global is_recording, recorded_letters, last_detection_time, detection_history
     is_recording = True
     recorded_letters = []
+    last_detection_time = time.time()
+    detection_history = {}  # Reset history deteksi saat mulai merekam
     return jsonify({"status": "success", "message": "Recording started"})
 
 @app.route('/stop_recording', methods=['POST'])

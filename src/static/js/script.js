@@ -1,4 +1,4 @@
-// SIBI Detector - JavaScript for UI Interactivity
+// SIBI Detector - JavaScript for UI Interactivity - Clean Version
 document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
     const recordBtn = document.getElementById('record-btn');

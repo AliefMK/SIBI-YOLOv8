@@ -1,73 +1,116 @@
-# Instruksi Menjalankan Program Deteksi Bahasa Isyarat SIBI (YOLOv8)
+# SIBI Detector Web Application
 
-Berikut adalah langkah-langkah untuk menjalankan program Python `sibi_detector_updated.py` yang telah dibuat:
+Aplikasi web untuk deteksi bahasa isyarat SIBI menggunakan YOLOv8 dengan fitur perekaman dan Google Text-to-Speech.
+
+## Fitur Utama
+
+- Deteksi bahasa isyarat SIBI secara real-time menggunakan model YOLOv8 kustom
+- Tampilan live view dari webcam dengan bounding box deteksi
+- Fitur rekam untuk mengumpulkan huruf-huruf yang terdeteksi
+- Konversi hasil deteksi menjadi audio menggunakan Google Text-to-Speech
+- Riwayat deteksi dengan kemampuan memutar ulang audio
+- Antarmuka pengguna modern dengan dark theme
 
 ## Prasyarat
 
-1.  **Python 3:** Pastikan Anda telah menginstal Python 3 (versi 3.8 atau lebih baru direkomendasikan) di komputer Anda.
-2.  **pip:** Pastikan pip (package installer for Python) sudah terinstal dan terbarui.
-3.  **Webcam:** Pastikan komputer Anda memiliki webcam yang terhubung dan berfungsi.
-4.  **File Model:** Anda memerlukan file model YOLOv8 kustom (`best.pt`) yang telah dilatih untuk deteksi SIBI.
+Sebelum menjalankan aplikasi, pastikan Anda memiliki:
 
-## Langkah-langkah Instalasi dan Menjalankan
+1. Python 3.8 atau lebih baru
+2. Webcam yang terhubung dan berfungsi
+3. File model YOLOv8 kustom untuk deteksi SIBI (`best.pt`)
+4. File kredensial Google Cloud untuk Text-to-Speech API
 
-1.  **Unduh File:**
-    *   Unduh file skrip Python `sibi_detector_updated.py`.
-    *   Unduh file model kustom `best.pt`.
-    *   Pastikan kedua file berada di direktori yang sama, atau sesuaikan path di dalam kode.
+## Instalasi
 
-2.  **Buka Terminal atau Command Prompt:**
-    *   Buka terminal (Linux/macOS) atau Command Prompt (Windows).
-    *   Navigasikan ke direktori tempat Anda menyimpan file `sibi_detector_updated.py` dan file model `best.pt` menggunakan perintah `cd`.
-      ```bash
-      cd path/ke/direktori/anda
-      ```
+1. Clone repositori ini atau ekstrak file ke direktori pilihan Anda
 
-3.  **Instal Dependensi:**
-    *   Jalankan perintah berikut untuk menginstal pustaka Python yang diperlukan (ultralytics dan OpenCV):
-      ```bash
-      pip install ultralytics opencv-contrib-python
-      ```
-    *   Tunggu hingga proses instalasi selesai. Ini mungkin memerlukan waktu beberapa saat tergantung pada koneksi internet Anda.
-    *   **Penting:** Gunakan `opencv-contrib-python` bukan `opencv-python` untuk menghindari error GUI pada Windows.
+2. Buat dan aktifkan virtual environment:
+   ```bash
+   cd sibi_flask_app
+   python -m venv venv
+   
+   # Di Windows
+   venv\Scripts\activate
+   
+   # Di Linux/Mac
+   source venv/bin/activate
+   ```
 
-4.  **Sesuaikan Konfigurasi (Jika Perlu):**
-    *   Buka file `sibi_detector_updated.py` dengan editor teks.
-    *   Jika lokasi file model Anda berbeda, ubah nilai variabel `MODEL_PATH`:
-      ```python
-      MODEL_PATH = "path/lengkap/ke/best.pt"
-      ```
-    *   Jika Anda memiliki lebih dari satu webcam dan ingin menggunakan webcam yang berbeda, ubah nilai `WEBCAM_INDEX`. Biasanya 0 adalah webcam internal, 1 adalah webcam eksternal pertama, dan seterusnya.
-      ```python
-      WEBCAM_INDEX = 1 # Contoh jika ingin menggunakan webcam kedua
-      ```
-    *   Anda juga bisa menyesuaikan `CONFIDENCE_THRESHOLD` (antara 0 dan 1) untuk mengatur sensitivitas deteksi. Nilai yang lebih rendah akan mendeteksi lebih banyak objek tetapi mungkin juga lebih banyak hasil yang salah.
+3. Instal dependensi:
+   ```bash
+   pip install flask opencv-python ultralytics google-cloud-texttospeech
+   ```
 
-5.  **Jalankan Skrip:**
-    *   Kembali ke terminal atau Command Prompt.
-    *   Jalankan skrip Python dengan perintah:
-      ```bash
-      python sibi_detector_updated.py
-      ```
+4. Pastikan file model `best.pt` berada di direktori utama aplikasi (`sibi_flask_app/`)
 
-6.  **Lihat Hasil Deteksi:**
-    *   Sebuah jendela baru akan muncul menampilkan feed langsung dari webcam Anda.
-    *   Jika isyarat tangan SIBI terdeteksi, Anda akan melihat kotak pembatas (bounding box) berwarna hijau di sekitarnya, beserta label huruf SIBI (A-Y, tanpa J dan Z) dan tingkat kepercayaannya.
+5. **Penting:** Untuk fitur Text-to-Speech, letakkan file kredensial Google Cloud Anda dengan nama `google_credentials.json` di direktori utama aplikasi (`sibi_flask_app/`)
 
-7.  **Keluar dari Program:**
-    *   Untuk menghentikan program, klik pada jendela tampilan video dan tekan tombol `q` pada keyboard Anda.
+## Menjalankan Aplikasi
+
+1. Pastikan virtual environment aktif
+
+2. Jalankan aplikasi:
+   ```bash
+   cd sibi_flask_app
+   python src/main.py
+   ```
+
+3. Buka browser dan akses `http://localhost:5000`
+
+## Cara Penggunaan
+
+1. **Melihat Deteksi Live:**
+   - Saat aplikasi berjalan, Anda akan melihat tampilan live dari webcam
+   - Tunjukkan isyarat tangan SIBI di depan kamera
+   - Aplikasi akan mendeteksi dan menampilkan bounding box dengan label huruf
+
+2. **Merekam Deteksi:**
+   - Klik tombol "Mulai Rekam" untuk mulai merekam huruf yang terdeteksi
+   - Indikator rekaman merah akan muncul di pojok kanan atas video
+   - Tunjukkan isyarat tangan SIBI satu per satu
+   - Klik tombol "Berhenti" untuk mengakhiri rekaman
+
+3. **Mendengarkan Hasil:**
+   - Setelah rekaman berhenti, audio akan otomatis diputar (jika fitur TTS berfungsi)
+   - Kata yang terbentuk akan ditampilkan di bawah video
+   - Riwayat deteksi akan ditambahkan ke panel kiri
+
+4. **Melihat Riwayat:**
+   - Panel kiri menampilkan riwayat deteksi terbaru
+   - Klik pada item riwayat untuk memutar ulang audio
+
+## Mendapatkan Kredensial Google Cloud
+
+Untuk menggunakan fitur Text-to-Speech, Anda memerlukan kredensial Google Cloud:
+
+1. Buat akun Google Cloud Platform (GCP) jika belum memilikinya
+2. Buat project baru di GCP Console
+3. Aktifkan Text-to-Speech API untuk project tersebut
+4. Buat service account dan download file kredensial JSON
+5. Rename file tersebut menjadi `google_credentials.json` dan letakkan di direktori utama aplikasi
 
 ## Troubleshooting
 
-*   **Error: Tidak dapat membuka webcam:** Pastikan webcam terhubung dengan benar, driver terinstal, dan tidak sedang digunakan oleh aplikasi lain. Coba ubah `WEBCAM_INDEX`.
-*   **Error memuat model:** Pastikan path ke file `best.pt` di variabel `MODEL_PATH` sudah benar dan file model tidak rusak.
-*   **Error GUI/cv2.imshow:** Jika Anda mendapatkan error terkait GUI atau cv2.imshow, pastikan Anda menginstal `opencv-contrib-python` dan bukan versi headless dari OpenCV.
-*   **Deteksi lambat:** Deteksi objek secara real-time membutuhkan sumber daya komputasi. Jika performa lambat, coba tutup aplikasi lain yang tidak perlu atau pertimbangkan menggunakan komputer dengan spesifikasi lebih tinggi (terutama GPU jika model mendukung akselerasi CUDA).
-*   **Tidak ada deteksi / deteksi tidak akurat:** Ini mungkin terkait dengan kondisi pencahayaan, atau posisi tangan terhadap webcam. Pastikan tangan Anda terlihat jelas dan coba berbagai posisi dan pencahayaan.
+- **Webcam tidak terdeteksi:** Pastikan webcam terhubung dan tidak digunakan oleh aplikasi lain
+- **Model tidak dimuat:** Verifikasi path ke file model `best.pt` sudah benar
+- **Error TTS:** Pastikan file kredensial Google Cloud sudah benar dan API sudah diaktifkan
+- **Deteksi tidak akurat:** Coba perbaiki pencahayaan dan posisi tangan Anda
 
-## Informasi Label SIBI
+## Struktur Direktori
 
-Program ini dilatih untuk mendeteksi 24 huruf bahasa isyarat SIBI:
-A, B, C, D, E, F, G, H, I, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y (tanpa J dan Z)
-
-Semoga berhasil menjalankan program deteksi bahasa isyarat SIBI!
+```
+sibi_flask_app/
+├── best.pt                    # File model YOLOv8 kustom
+├── google_credentials.json    # File kredensial Google Cloud (harus ditambahkan)
+├── venv/                      # Virtual environment
+└── src/
+    ├── main.py                # File utama aplikasi Flask
+    ├── static/
+    │   ├── css/
+    │   │   └── style.css      # Stylesheet
+    │   ├── js/
+    │   │   └── script.js      # JavaScript untuk interaktivitas
+    │   └── audio/             # Direktori untuk file audio hasil TTS
+    └── templates/
+        └── index.html         # Template halaman utama
+```

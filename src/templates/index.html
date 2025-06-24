@@ -36,7 +36,7 @@
                     
                     <div class="history-section">
                         <h3>Riwayat Deteksi</h3>
-                        <div id="detection-history">
+                        <div id="detection-history" class="scrollable">
                             <p id="no-history-message">Belum ada riwayat deteksi</p>
                             <ul id="history-list"></ul>
                         </div>
@@ -45,6 +45,13 @@
                 
                 <!-- Panel Tengah - Video Stream -->
                 <div class="center-panel">
+                    <!-- Debug Mode Toggle -->
+                    <div class="debug-toggle">
+                        <button id="debug-toggle-btn" class="btn debug-btn">
+                            <i class="fas fa-bug"></i> Mode Debug
+                        </button>
+                    </div>
+
                     <div class="video-container">
                         <img src="{{ url_for('video_feed') }}" alt="Video Stream" id="video-stream">
                         <div class="recording-indicator" id="recording-indicator">
@@ -66,6 +73,45 @@
                         <div id="current-detection">
                             <h3>Deteksi Saat Ini:</h3>
                             <p id="current-word"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel Kanan - Statistik Debug -->
+                <div id="right-panel" class="right-panel">
+                    <div id="debug-stats-panel" class="debug-stats-section" style="display: none;">
+                        <div class="panel-header">
+                            <h2>Statistik Debug</h2>
+                        </div>
+                        <div class="debug-stats-container scrollable">
+                            <div class="debug-stat">
+                                <span class="stat-label">FPS:</span>
+                                <span id="stat-fps" class="stat-value">0</span>
+                            </div>
+                            <div class="debug-stat">
+                                <span class="stat-label">Latensi:</span>
+                                <span id="stat-latency" class="stat-value">0 ms</span>
+                            </div>
+                            <div class="debug-stat">
+                                <span class="stat-label">Inferensi:</span>
+                                <span id="stat-inference" class="stat-value">0 ms</span>
+                            </div>
+                            <div class="debug-stat">
+                                <span class="stat-label">CPU:</span>
+                                <span id="stat-cpu" class="stat-value">0%</span>
+                            </div>
+                            <div class="debug-stat">
+                                <span class="stat-label">Memori:</span>
+                                <span id="stat-memory" class="stat-value">0%</span>
+                            </div>
+                            <div class="debug-stat">
+                                <span class="stat-label">Confidence:</span>
+                                <span id="stat-confidence" class="stat-value">0</span>
+                            </div>
+                            <div class="debug-stat">
+                                <span class="stat-label">Objek:</span>
+                                <span id="stat-objects" class="stat-value">0</span>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -1,18 +1,23 @@
-# SIBI Detector Web Application
+# SIBI Detector dengan Mode Debug
 
-Aplikasi web untuk deteksi bahasa isyarat SIBI menggunakan YOLOv8 dengan fitur perekaman stabil dan Google Text-to-Speech.
+Aplikasi web untuk deteksi bahasa isyarat SIBI menggunakan YOLOv8 dengan fitur perekaman stabil, Google Text-to-Speech, dan mode debug untuk analisis performa.
 
 ## Fitur Utama
 
 - Deteksi bahasa isyarat SIBI secara real-time menggunakan model YOLOv8 kustom
-- **Filter stabilitas deteksi** - Hanya merekam huruf yang terdeteksi secara konsisten dalam beberapa frame berturut-turut
-- **Threshold kepercayaan tinggi** - Menggunakan ambang batas kepercayaan 0.7 untuk memastikan deteksi akurat
-- **Jeda deteksi optimal** - Jeda 0.8 detik antar deteksi untuk memberikan waktu stabilisasi pose tangan
-- Tampilan live view dari webcam dengan bounding box deteksi
-- Fitur rekam untuk mengumpulkan huruf-huruf yang terdeteksi
+- Filter stabilitas deteksi - Hanya merekam huruf yang terdeteksi secara konsisten dalam beberapa frame berturut-turut
+- Threshold kepercayaan tinggi - Menggunakan ambang batas kepercayaan untuk memastikan deteksi akurat
+- Jeda deteksi optimal - Jeda antar deteksi untuk memberikan waktu stabilisasi pose tangan
 - Konversi hasil deteksi menjadi audio menggunakan Google Text-to-Speech
 - Riwayat deteksi dengan kemampuan memutar ulang audio
-- Antarmuka pengguna modern dengan dark theme
+- **Mode Debug** - Menampilkan statistik performa deteksi secara real-time:
+  - FPS (Frame Per Second)
+  - Latensi pemrosesan per frame
+  - Waktu inferensi model YOLOv8
+  - Penggunaan CPU
+  - Penggunaan memori
+  - Confidence score rata-rata
+  - Jumlah objek terdeteksi per frame
 
 ## Prasyarat
 
@@ -25,11 +30,11 @@ Sebelum menjalankan aplikasi, pastikan Anda memiliki:
 
 ## Instalasi
 
-1. Ekstrak file ke direktori pilihan Anda
+1. Clone repositori ini atau ekstrak file ke direktori pilihan Anda
 
 2. Buat dan aktifkan virtual environment:
    ```bash
-   cd sibi_flask_app
+   cd sibi_debug
    python -m venv venv
    
    # Di Windows
@@ -41,12 +46,12 @@ Sebelum menjalankan aplikasi, pastikan Anda memiliki:
 
 3. Instal dependensi:
    ```bash
-   pip install flask opencv-python ultralytics google-cloud-texttospeech
+   pip install flask opencv-python ultralytics google-cloud-texttospeech psutil
    ```
 
-4. Pastikan file model `best.pt` berada di direktori utama aplikasi (`sibi_flask_app/`)
+4. Pastikan file model `best.pt` berada di direktori utama aplikasi (`sibi_debug/`)
 
-5. **Penting:** Untuk fitur Text-to-Speech, letakkan file kredensial Google Cloud Anda dengan nama `google_credentials.json` di direktori utama aplikasi (`sibi_flask_app/`)
+5. **Penting:** Untuk fitur Text-to-Speech, letakkan file kredensial Google Cloud Anda dengan nama `google_credentials.json` di direktori utama aplikasi (`sibi_debug/`)
 
 ## Menjalankan Aplikasi
 
@@ -54,7 +59,7 @@ Sebelum menjalankan aplikasi, pastikan Anda memiliki:
 
 2. Jalankan aplikasi:
    ```bash
-   cd sibi_flask_app
+   cd sibi_debug
    python src/main.py
    ```
 
@@ -62,17 +67,7 @@ Sebelum menjalankan aplikasi, pastikan Anda memiliki:
 
 ## Cara Penggunaan
 
-### Fitur Deteksi Stabil
-
-Aplikasi ini menggunakan tiga mekanisme untuk memastikan deteksi yang stabil dan akurat:
-
-1. **Filter Stabilitas (3 Frame)** - Huruf hanya akan direkam jika terdeteksi secara konsisten dalam 3 frame berturut-turut. Ini mengurangi deteksi yang salah saat mengubah pose tangan.
-
-2. **Threshold Kepercayaan Tinggi (0.7)** - Hanya deteksi dengan tingkat kepercayaan minimal 70% yang akan dipertimbangkan, mengurangi deteksi yang tidak akurat.
-
-3. **Jeda Deteksi Optimal (0.8 detik)** - Sistem menunggu 0.8 detik antara deteksi huruf, memberikan waktu yang cukup untuk stabilisasi pose tangan.
-
-### Langkah Penggunaan
+### Fitur Deteksi dan Rekaman
 
 1. **Melihat Deteksi Live:**
    - Saat aplikasi berjalan, Anda akan melihat tampilan live dari webcam
@@ -97,6 +92,36 @@ Aplikasi ini menggunakan tiga mekanisme untuk memastikan deteksi yang stabil dan
    - Panel kiri menampilkan riwayat deteksi terbaru
    - Klik pada item riwayat untuk memutar ulang audio
 
+### Mode Debug
+
+Mode debug memungkinkan Anda untuk memantau statistik performa deteksi YOLO secara real-time, yang berguna untuk analisis dan optimasi.
+
+1. **Mengaktifkan Mode Debug:**
+   - Klik tombol "Mode Debug" di bagian atas panel video
+   - Tombol akan berubah warna menjadi hijau dan bertuliskan "Mode Debug: ON"
+   - Panel statistik debug akan muncul di bagian bawah panel kiri
+   - Overlay statistik akan muncul di video feed
+
+2. **Memahami Statistik Debug:**
+   - **FPS:** Frame Per Second - jumlah frame yang diproses per detik. Nilai lebih tinggi berarti performa lebih baik.
+   - **Latensi:** Waktu total yang dibutuhkan untuk memproses satu frame (dalam milidetik). Nilai lebih rendah berarti performa lebih baik.
+   - **Inferensi:** Waktu yang dibutuhkan model YOLOv8 untuk mendeteksi objek dalam satu frame (dalam milidetik). Nilai lebih rendah berarti performa lebih baik.
+   - **CPU:** Persentase penggunaan CPU oleh aplikasi.
+   - **Memori:** Persentase penggunaan memori oleh aplikasi.
+   - **Confidence:** Nilai kepercayaan rata-rata dari deteksi. Nilai lebih tinggi berarti deteksi lebih akurat.
+   - **Objek:** Jumlah objek yang terdeteksi dalam frame saat ini.
+
+3. **Menonaktifkan Mode Debug:**
+   - Klik tombol "Mode Debug: ON" untuk menonaktifkan mode debug
+   - Panel statistik debug akan disembunyikan
+   - Overlay statistik akan dihapus dari video feed
+
+4. **Tips Penggunaan Mode Debug:**
+   - Gunakan mode debug untuk mengidentifikasi bottleneck performa
+   - Jika FPS rendah (<15), coba kurangi resolusi kamera atau gunakan komputer dengan spesifikasi lebih tinggi
+   - Jika waktu inferensi tinggi (>50ms), pertimbangkan untuk menggunakan model YOLOv8 yang lebih kecil (YOLOv8n atau YOLOv8s)
+   - Perhatikan penggunaan CPU dan memori untuk memastikan aplikasi tidak menggunakan terlalu banyak sumber daya
+
 ## Tips untuk Deteksi Optimal
 
 - **Pencahayaan yang baik** - Pastikan area tangan Anda memiliki pencahayaan yang cukup dan merata
@@ -117,16 +142,25 @@ Untuk menggunakan fitur Text-to-Speech, Anda memerlukan kredensial Google Cloud:
 
 ## Troubleshooting
 
+### Masalah Umum
+
 - **Webcam tidak terdeteksi:** Pastikan webcam terhubung dan tidak digunakan oleh aplikasi lain
 - **Model tidak dimuat:** Verifikasi path ke file model `best.pt` sudah benar
 - **Error TTS:** Pastikan file kredensial Google Cloud sudah benar dan API sudah diaktifkan
 - **Deteksi tidak stabil:** Coba perbaiki pencahayaan, posisi tangan, dan tahan pose lebih lama
-- **Huruf tidak terekam:** Pastikan Anda menahan pose tangan cukup lama (minimal 2-3 detik) untuk memenuhi kriteria stabilitas
+- **Huruf tidak terekam:** Pastikan Anda menahan pose tangan cukup lama untuk memenuhi kriteria stabilitas
+
+### Masalah Mode Debug
+
+- **Statistik tidak muncul:** Pastikan mode debug sudah diaktifkan dengan benar
+- **FPS sangat rendah:** Periksa apakah ada aplikasi lain yang menggunakan banyak sumber daya CPU/GPU
+- **Statistik tidak update:** Refresh halaman browser dan aktifkan kembali mode debug
+- **Nilai statistik tidak akurat:** Pastikan tidak ada proses berat lain yang berjalan di latar belakang
 
 ## Struktur Direktori
 
 ```
-sibi_flask_app/
+sibi_debug/
 ├── best.pt                    # File model YOLOv8 kustom
 ├── google_credentials.json    # File kredensial Google Cloud (harus ditambahkan)
 ├── venv/                      # Virtual environment
@@ -141,3 +175,13 @@ sibi_flask_app/
     └── templates/
         └── index.html         # Template halaman utama
 ```
+
+## Pengembangan Lebih Lanjut
+
+Beberapa ide untuk pengembangan lebih lanjut:
+
+1. Tambahkan grafik performa real-time untuk visualisasi statistik debug
+2. Implementasikan fitur rekam video dengan overlay deteksi
+3. Tambahkan opsi untuk menyimpan log statistik performa ke file CSV
+4. Implementasikan deteksi multi-tangan untuk isyarat yang lebih kompleks
+5. Tambahkan fitur kalibrasi kamera untuk meningkatkan akurasi deteksi

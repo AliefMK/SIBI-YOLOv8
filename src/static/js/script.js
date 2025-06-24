@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (debugMode) {
                     // Aktifkan mode debug
                     debugToggleBtn.classList.add('active');
-                    debugToggleBtn.innerHTML = '<i class="fas fa-bug"></i> Mode Debug: ON';
+                    debugToggleBtn.innerHTML = '<i class="fas fa-bug"></i> Performance Dashboard: ON';
                     debugStatsPanel.style.display = 'block';
                     
                     // Mulai polling statistik debug
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     // Nonaktifkan mode debug
                     debugToggleBtn.classList.remove('active');
-                    debugToggleBtn.innerHTML = '<i class="fas fa-bug"></i> Mode Debug';
+                    debugToggleBtn.innerHTML = '<i class="fas fa-bug"></i> Performance Dashboard';
                     debugStatsPanel.style.display = 'none';
                     
                     // Hentikan polling statistik debug
